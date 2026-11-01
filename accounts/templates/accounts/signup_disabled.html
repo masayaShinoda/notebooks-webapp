@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block title %}Registration disabled · Notebooks{% endblock %}
+
+{% block main_class %}flex-1 min-h-0 overflow-y-auto overscroll-contain grid place-items-center px-horizontal{% endblock %}
+
+{% block content %}
+<div class="w-full max-w-sm bg-grey-1 dark:bg-grey-1 rounded-4xl shadow-flat p-8 text-center">
+  <h1 class="text-scale-2 font-semibold text-primary dark:text-secondary-shade-b mb-3">Registration is closed</h1>
+  <p class="text-scale-0 text-grey-5 mb-6">
+    This is a private, self-hosted instance. Ask the administrator to create an account for you.
+  </p>
+  <a href="{% url 'accounts:login' %}" class="text-interactive hover:underline transition-colors">Back to sign in</a>
+</div>
+{% endblock %}

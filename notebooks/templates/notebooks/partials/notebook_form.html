@@ -1,0 +1,43 @@
+<h2 class="text-scale-1 font-semibold mb-5">{% if active_notebook %}Edit notebook{% else %}New notebook{% endif %}</h2>
+
+{% if active_notebook %}{% url 'notebooks:notebook_update' active_notebook.id as form_action %}{% else %}{% url 'notebooks:notebook_create' as form_action %}{% endif %}
+<form method="post" action="{{ form_action }}" hx-post="{{ form_action }}" hx-target="#notes-pane" class="space-y-5">
+  {% csrf_token %}
+  <div>
+    <label for="{{ notebook_form.title.id_for_label }}" class="block text-scale-neg-1 font-medium text-grey-5 mb-1.5">Title</label>
+    {{ notebook_form.title }}
+    {% for error in notebook_form.title.errors %}
+    <p id="{{ notebook_form.title.auto_id }}_error" class="text-scale-neg-1 text-danger mt-1" role="alert">{{ error }}</p>
+    {% endfor %}
+  </div>
+  <fieldset>
+    <legend class="block text-scale-neg-1 font-medium text-grey-5 mb-2">Color</legend>
+    <div class="flex flex-wrap gap-2.5">
+      {% for radio in notebook_form.color %}
+      <label class="group cursor-pointer rounded-full [&>input]:sr-only [&>input]:focus:outline-none has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-interactive has-[:focus-visible]:outline-offset-2">
+        {{ radio.tag }}
+        <span class="sr-only">{{ radio.choice_label }}</span>
+        <span class="block w-8 h-8 rounded-full shadow-flat transition hover:scale-105 hover:shadow-convex active:scale-95 active:shadow-pressed group-has-[:checked]:shadow-pressed-secondary group-has-[:checked]:outline-2 group-has-[:checked]:outline-offset-2 group-has-[:checked]:outline-grey-6"
+              style="background-color: var(--notebook-color-{{ radio.data.value }})"></span>
+      </label>
+      {% endfor %}
+    </div>
+    {% for error in notebook_form.color.errors %}
+    <p class="text-scale-neg-1 text-danger mt-1" role="alert">{{ error }}</p>
+    {% endfor %}
+  </fieldset>
+  <div class="flex items-center gap-3">
+    <button type="submit" class="rounded-4xl bg-secondary text-white px-5 py-2 font-medium shadow-flat hover:shadow-convex active:shadow-pressed transition-shadow">
+      {% if active_notebook %}Save{% else %}Create{% endif %}
+    </button>
+    {% if active_notebook %}
+    <a href="{% url 'notebooks:notebook_detail' active_notebook.id %}"
+       hx-get="{% url 'notebooks:notebook_detail' active_notebook.id %}" hx-target="#notes-pane"
+       class="py-1 text-scale-neg-1 text-grey-5 hover:text-interactive transition-colors">Cancel</a>
+    {% else %}
+    <a href="{% url 'notebooks:workspace' %}"
+       hx-get="{% url 'notebooks:workspace' %}" hx-target="#notes-pane"
+       class="py-1 text-scale-neg-1 text-grey-5 hover:text-interactive transition-colors">Cancel</a>
+    {% endif %}
+  </div>
+</form>

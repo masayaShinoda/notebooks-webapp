@@ -1,0 +1,28 @@
+{% comment %}
+#editor-pane content for a trashed note (trash_note in views.py). Read-only on
+purpose: there is no editor form, so nothing can autosave over it. Restore
+opens it in the editor; deleting forever goes back to the trash list.
+{% endcomment %}
+<div class="h-full flex flex-col">
+  <div class="shrink-0 flex flex-wrap items-center justify-between mb-5 gap-2 max-lg:mb-2">
+    <p class="text-scale-neg-2 text-grey-5 min-w-0 truncate">In trash · deleted {{ trash_note.deleted_at|timesince }} ago from {{ trash_note.notebook.title }}</p>
+    <div class="flex items-center gap-3 shrink-0">
+      <form hx-post="{% url 'notebooks:trash_restore_note' trash_note.id %}" hx-target="#editor-pane">
+        {% csrf_token %}
+        <button type="submit" class="py-1 text-scale-neg-1 font-medium text-interactive max-lg:py-2.5 max-lg:px-1">Restore</button>
+      </form>
+      <form hx-post="{% url 'notebooks:trash_delete_note' trash_note.id %}" hx-target="#notes-pane"
+            hx-confirm="Permanently delete “{{ trash_note.title }}”? This can't be undone.">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="trash">
+        <button type="submit" class="py-1 text-scale-neg-1 text-grey-5 hover:text-danger transition-colors max-lg:py-2.5 max-lg:px-1">Delete forever</button>
+      </form>
+    </div>
+  </div>
+  <h2 class="shrink-0 text-scale-2 font-semibold mb-4 truncate">{{ trash_note.title }}</h2>
+  {% if preview_html is None %}
+  <p class="text-scale-neg-1 text-grey-5">This note can't be decrypted, so it can't be shown.</p>
+  {% else %}
+  <div class="markdown-body flex-1 min-h-0 rounded-xl shadow-flat p-4 overflow-y-auto max-lg:rounded-none max-lg:shadow-none max-lg:p-0">{{ preview_html|safe }}</div>
+  {% endif %}
+</div>

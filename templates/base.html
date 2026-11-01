@@ -1,0 +1,105 @@
+{% load static vstatic %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#f8f9fa">
+  {% comment %}
+  Private instance: note content is behind auth anyway, but keep the public
+  sign-in/registration pages out of search and AI indexes. Paired with
+  robots.txt and nginx's X-Robots-Tag header -- see DEPLOY.md.
+  {% endcomment %}
+  <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex">
+  <title>{% block title %}Notebooks{% endblock %}</title>
+  <script>
+    (function () {
+      var stored = localStorage.getItem('theme');
+      var dark = stored ? stored === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+      document.documentElement.classList.toggle('dark', dark);
+      document.querySelector('meta[name="theme-color"]').setAttribute('content', dark ? '#212429' : '#f8f9fa');
+    })();
+  </script>
+  <script>
+    // Registered here rather than as an inline x-data object because the theme
+    // toggle is rendered twice -- the desktop header and the mobile app bar's
+    // overflow menu. Must run before alpine.min.js (which is `defer`), same
+    // ordering contract as offline-notes.js.
+    document.addEventListener('alpine:init', function () {
+      Alpine.data('themeToggle', function () {
+        return {
+          dark: document.documentElement.classList.contains('dark'),
+          toggle() {
+            this.dark = !this.dark;
+            document.documentElement.classList.toggle('dark', this.dark);
+            localStorage.setItem('theme', this.dark ? 'dark' : 'light');
+            document.querySelector('meta[name="theme-color"]').setAttribute('content', this.dark ? '#212429' : '#f8f9fa');
+          },
+        };
+      });
+    });
+  </script>
+  <link rel="icon" href="{% static 'favicons/favicon.ico' %}" sizes="any">
+  <link rel="icon" type="image/svg+xml" href="{% static 'img/logo.svg' %}">
+  <link rel="icon" type="image/png" sizes="32x32" href="{% static 'favicons/favicon-32x32.png' %}">
+  <link rel="icon" type="image/png" sizes="16x16" href="{% static 'favicons/favicon-16x16.png' %}">
+  <link rel="apple-touch-icon" sizes="180x180" href="{% static 'favicons/apple-icon-180x180.png' %}">
+  <link rel="manifest" href="{% static 'favicons/manifest.json' %}">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Notebooks">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="msapplication-config" content="{% static 'favicons/browserconfig.xml' %}">
+  <link rel="stylesheet" href="{% vstatic 'css/app.css' %}">
+  {% comment %}
+  Back/Forward always does a real page load. htmx's history cache snapshots the
+  DOM with Alpine's :class output baked in (e.g. `hidden lg:block`); on restore
+  Alpine re-inits from the *original* page's x-data and only adds classes, so
+  the panes end up both `hidden` and `block` -- a blank workspace. A cache miss
+  is no better without refreshOnHistoryMiss: the restore GET carries
+  HX-Request, so the views would answer with a bare fragment.
+  {% endcomment %}
+  {% comment %}
+  timeout: without one, a request on a dead-but-not-closed connection hangs
+  forever and never reaches the failure handling in app-errors.js.
+  {% endcomment %}
+  <meta name="htmx-config" content='{"historyCacheSize":0,"refreshOnHistoryMiss":true,"timeout":20000}'>
+  <script src="{% vstatic 'js/htmx.min.js' %}"></script>
+  <script src="{% vstatic 'js/app-errors.js' %}" defer></script>
+  <script src="{% vstatic 'js/offline-notes.js' %}" defer></script>
+  <script src="{% vstatic 'js/alpine.min.js' %}" defer></script>
+</head>
+<body class="h-dvh flex flex-col overflow-hidden bg-grey-1 text-grey-6 font-primary" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+  {% comment %}Progress bar for slow requests -- driven by $store.app.loading (app-errors.js).{% endcomment %}
+  <div x-data x-show="$store.app.loading" x-cloak x-transition.opacity.duration.150ms
+       class="fixed top-0 inset-x-0 z-50 h-0.5 bg-interactive animate-pulse" aria-hidden="true"></div>
+  <a href="#main" class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:top-3 focus:left-3 focus:rounded-xl focus:bg-grey-1 focus:px-4 focus:py-2 focus:shadow-flat focus:text-interactive">Skip to content</a>
+  {% if user.is_authenticated %}
+  <header class="shrink-0 flex items-center justify-between px-horizontal py-4 border-b border-grey-2 dark:border-grey-2 {% block header_extra_class %}{% endblock %}">
+    <a href="{% url 'notebooks:workspace' %}" hx-get="{% url 'notebooks:workspace' %}" hx-target="#notes-pane" hx-push-url="true"
+       class="flex items-center gap-2 font-semibold text-primary dark:text-secondary-shade-b">
+      <svg width="24" height="24" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg" class="shrink-0" aria-hidden="true">
+        <path d="M40 48C40 48 56 48 56 48C56 39.2 48.8 32 40 32C40 32 24 32 24 32C24 40.8 31.2 48 40 48C40 48 40 48 40 48ZM77.3 0L64 0L64 64L16 64L16 16C16 16 29.3 16 29.3 16C29.3 7.2 22.1 0 13.3 0C13.3 0 0 0 0 0C0 0 0 72 0 72C0 76.4 3.6 80 8 80C8 80 72 80 72 80C76.4 80 80 76.4 80 72C80 72 80 16 80 16C80 16 93.3 16 93.3 16C93.3 7.2 86.2 0 77.3 0C77.3 0 77.3 0 77.3 0Z" fill="currentColor" transform="translate(24 24)" />
+      </svg>
+      Notebooks
+    </a>
+    <div class="flex items-center gap-4" x-data="themeToggle">
+      <button type="button" @click="toggle()" :class="dark ? 'shadow-pressed-secondary' : 'shadow-flat'"
+              class="w-11 h-11 rounded-full grid place-items-center text-grey-5 dark:text-grey-5 hover:shadow-convex active:shadow-pressed transition-shadow" aria-label="Toggle dark mode">
+        <span x-show="!dark" x-cloak x-transition.opacity.duration.150ms aria-hidden="true">🌙</span>
+        <span x-show="dark" x-cloak x-transition.opacity.duration.150ms aria-hidden="true">☀️</span>
+      </button>
+      <form method="post" action="{% url 'accounts:logout' %}">
+        {% csrf_token %}
+        <button type="submit" class="-my-2 py-2 text-scale-neg-1 text-grey-5 hover:text-interactive active:text-interactive transition-colors">Sign out</button>
+      </form>
+    </div>
+  </header>
+  {% endif %}
+  {% include "partials/status_banner.html" %}
+  <main id="main" class="{% block main_class %}flex-1 min-h-0 overflow-y-auto px-horizontal py-6{% endblock %}">
+    {% block content %}{% endblock %}
+  </main>
+  {% include "partials/toasts.html" %}
+</body>
+</html>

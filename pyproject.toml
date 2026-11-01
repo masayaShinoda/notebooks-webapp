@@ -1,0 +1,18 @@
+[project]
+name = "notebooks"
+version = "0.1.0"
+description = "Self-hosted, encrypted Markdown notebook app built with Django and HTMX"
+readme = "README.md"
+license = "AGPL-3.0-or-later"
+license-files = ["LICENSE"]
+requires-python = ">=3.12"
+dependencies = [
+    "cryptography>=50.0.0",
+    "django>=6.0.7",
+    "django-environ>=0.14.0",
+    "django-unfold>=0.102.0",
+    "gunicorn>=23.0.0",
+    "markdown>=3.10.3",
+    "nh3>=0.3.6",
+    "pygments>=2.20.0",
+]

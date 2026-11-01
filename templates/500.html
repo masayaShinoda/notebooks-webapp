@@ -1,0 +1,68 @@
+{% comment %}
+Deliberately standalone: no {% extends %}, no {% static %}/{% vstatic %}, no
+context variables.
+
+Django renders 500.html with an EMPTY context and no request, so context
+processors never run. A 500 page built on base.html would depend on the very
+machinery that may have just failed -- and a template error here produces a
+bare, unstyled fallback instead. Inline styles keep it working even if the
+stylesheet is missing, which is itself a plausible cause of a broken deploy.
+
+Colours are hardcoded copies of the grey-1/grey-5/grey-6 and primary tokens
+from theme/static_src/app.css; they cannot reference the design system.
+{% endcomment %}<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex">
+<title>Error 500: Server Error</title>
+<style>
+  :root { color-scheme: light dark; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    display: grid;
+    place-items: center;
+    padding: 1.5rem;
+    box-sizing: border-box;
+    background: #f8f9fa;
+    color: #212429;
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    text-align: center;
+  }
+  .card {
+    width: 100%;
+    max-width: 24rem;
+    padding: 2rem;
+    border-radius: 2rem;
+    background: #f8f9fa;
+    box-shadow: 6px 6px 12px #d1d3d6, -6px -6px 12px #ffffff;
+  }
+  h1 { margin: 0 0 0.75rem; font-size: 1.25rem; color: #4a5ba9; }
+  p { margin: 0 0 1.5rem; color: #6c757d; line-height: 1.5; }
+  a {
+    display: inline-block;
+    padding: 0.5rem 1.5rem;
+    border-radius: 2rem;
+    background: #4a5ba9;
+    color: #ffffff;
+    font-weight: 500;
+    text-decoration: none;
+  }
+  @media (prefers-color-scheme: dark) {
+    body { background: #212429; color: #e9ecef; }
+    .card { background: #212429; box-shadow: 6px 6px 12px #1a1d21, -6px -6px 12px #282b31; }
+    h1 { color: #a8b4e8; }
+    p { color: #adb5bd; }
+    a { background: #a8b4e8; color: #212429; }
+  }
+</style>
+</head>
+<body>
+  <div class="card">
+    <h1>Error 500: Server Error</h1>
+    <p>Something went wrong on our end. Your saved notes are unaffected.</p>
+    <a href="/">Back to home</a>
+  </div>
+</body>
+</html>

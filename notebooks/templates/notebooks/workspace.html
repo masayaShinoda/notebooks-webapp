@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block title %}{% if active_note %}{{ active_note.title }} · {% endif %}Notebooks{% endblock %}
+
+{% block main_class %}flex-1 min-h-0{% endblock %}
+
+{% comment %}
+Below lg the mobile app bar replaces the global header entirely, so we never
+stack two bars. Other pages (login, register) keep the header.
+{% endcomment %}
+{% block header_extra_class %}max-lg:hidden{% endblock %}
+
+{% block content %}
+{% comment %}
+x-on:pane below: the destination pane is told to us by the server via
+HX-Trigger (see _pane in views.py). Deriving it from htmx:after-swap does not
+work -- that event also fires for out-of-band swaps, so opening a note (main
+swap -> #editor-pane, OOB -> #notes-pane) would land on the notes list.
+{% endcomment %}
+<div
+  x-data="{ mobilePane: '{% if active_note or trash_note %}editor{% elif active_notebook or trash %}notes{% else %}notebooks{% endif %}' }"
+  x-on:pane.window="mobilePane = $event.detail.value || $event.detail"
+  class="h-full flex flex-col"
+>
+  <header class="lg:hidden shrink-0 flex items-center gap-1 h-14 px-2 border-b border-grey-2 dark:border-grey-2">
+    {% comment %}
+    Back is a pure Alpine pane change, never a request: all three panes stay
+    mounted, so going back and forward is instant and cannot discard text typed
+    into the editor. Labelled with the parent level, iOS-style -- both labels
+    are static, which is what keeps this bar out of the OOB dance.
+    {% endcomment %}
+    <button type="button" x-show="mobilePane !== 'notebooks'" x-cloak
+            @click="mobilePane = mobilePane === 'editor' ? 'notes' : 'notebooks'"
+            class="flex items-center gap-0.5 h-11 pl-1 pr-2 -ml-1 rounded-xl text-interactive text-scale-0">
+      <svg viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5 shrink-0" aria-hidden="true"><path d="M10.8284 12.0007L15.7782 16.9504L14.364 18.3646L8 12.0007L14.364 5.63672L15.7782 7.05093L10.8284 12.0007Z"/></svg>
+      <span x-show="mobilePane === 'notes'">Notebooks</span>
+      <span x-show="mobilePane === 'editor'" x-cloak>Notes</span>
+    </button>
+
+    <span x-show="mobilePane === 'notebooks'" class="flex items-center gap-2 pl-1 font-semibold text-primary dark:text-secondary-shade-b">
+      <svg width="22" height="22" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg" class="shrink-0" aria-hidden="true">
+        <path d="M40 48C40 48 56 48 56 48C56 39.2 48.8 32 40 32C40 32 24 32 24 32C24 40.8 31.2 48 40 48C40 48 40 48 40 48ZM77.3 0L64 0L64 64L16 64L16 16C16 16 29.3 16 29.3 16C29.3 7.2 22.1 0 13.3 0C13.3 0 0 0 0 0C0 0 0 72 0 72C0 76.4 3.6 80 8 80C8 80 72 80 72 80C76.4 80 80 76.4 80 72C80 72 80 16 80 16C80 16 93.3 16 93.3 16C93.3 7.2 86.2 0 77.3 0C77.3 0 77.3 0 77.3 0Z" fill="currentColor" transform="translate(24 24)" />
+      </svg>
+      Notebooks
+    </span>
+
+    <div class="ml-auto relative" x-data="{ open: false }" @click.outside="open = false" @keydown.escape.window="open = false">
+      <button type="button" @click="open = !open" :aria-expanded="open" aria-haspopup="menu"
+              class="w-11 h-11 rounded-full grid place-items-center text-grey-5 dark:text-grey-5" aria-label="More options">
+        <svg viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5" aria-hidden="true"><path d="M12 3C11.0111 3 10.2222 3.78889 10.2222 4.77778C10.2222 5.76667 11.0111 6.55556 12 6.55556C12.9889 6.55556 13.7778 5.76667 13.7778 4.77778C13.7778 3.78889 12.9889 3 12 3ZM12 17.4444C11.0111 17.4444 10.2222 18.2333 10.2222 19.2222C10.2222 20.2111 11.0111 21 12 21C12.9889 21 13.7778 20.2111 13.7778 19.2222C13.7778 18.2333 12.9889 17.4444 12 17.4444ZM12 10.2222C11.0111 10.2222 10.2222 11.0111 10.2222 12C10.2222 12.9889 11.0111 13.7778 12 13.7778C12.9889 13.7778 13.7778 12.9889 13.7778 12C13.7778 11.0111 12.9889 10.2222 12 10.2222Z"/></svg>
+      </button>
+      <div x-show="open" x-cloak x-transition.opacity.duration.150ms role="menu"
+           class="absolute right-0 top-12 z-30 min-w-48 rounded-xl border border-grey-2 bg-grey-1 shadow-raised py-1">
+        <button type="button" x-data="themeToggle" @click="toggle()" role="menuitem"
+                class="w-full flex items-center gap-3 px-4 py-3 text-scale-0 text-left">
+          <span x-show="!dark" aria-hidden="true">🌙</span>
+          <span x-show="dark" x-cloak aria-hidden="true">☀️</span>
+          <span x-text="dark ? 'Light mode' : 'Dark mode'"></span>
+        </button>
+        <form method="post" action="{% url 'accounts:logout' %}">
+          {% csrf_token %}
+          <button type="submit" role="menuitem" class="w-full px-4 py-3 text-scale-0 text-left">Sign out</button>
+        </form>
+      </div>
+    </div>
+  </header>
+
+  <div class="flex-1 min-h-0 px-horizontal py-4 md:py-6 overflow-hidden max-lg:px-0 max-lg:py-0 bg-linear-to-br from-grey-1 to-grey-2">
+    <div class="h-full max-w-[96rem] mx-auto grid grid-cols-1 lg:grid-cols-[16rem_20rem_1fr] gap-4 md:gap-6">
+      {% comment %}
+      Pane chrome (card, border, neumorphic shadow) is desktop-only: with a
+      single pane on screen there is no figure/ground to establish, and the
+      nested shadows just stack. max-lg: overrides only, so the lg layout is
+      byte-for-byte what it was.
+      {% endcomment %}
+      <aside id="notebook-rail" aria-label="Notebooks" :class="mobilePane === 'notebooks' ? 'block' : 'hidden lg:block'"
+             class="min-h-0 overflow-y-auto overscroll-contain rounded-2xl bg-grey-1 dark:bg-grey-1 shadow-flat p-5 border border-grey-2 max-lg:rounded-none max-lg:shadow-none max-lg:border-0 max-lg:px-4 max-lg:py-2 max-lg:pb-[calc(env(safe-area-inset-bottom,0px)+6rem)]">
+        {% include "notebooks/partials/notebook_rail.html" %}
+      </aside>
+      <section id="notes-pane" :class="mobilePane === 'notes' ? 'block' : 'hidden lg:block'"
+               class="min-h-0 overflow-y-auto overscroll-contain rounded-2xl bg-grey-1 dark:bg-grey-1 shadow-flat p-5 border border-grey-2 max-lg:rounded-none max-lg:shadow-none max-lg:border-0 max-lg:px-4 max-lg:py-3 max-lg:pb-[calc(env(safe-area-inset-bottom,0px)+6rem)]">
+        {% if notebook_form %}
+          {% include "notebooks/partials/notebook_form.html" %}
+        {% elif active_notebook %}
+          {% include "notebooks/partials/notes_list.html" %}
+        {% elif trash %}
+          {% include "notebooks/partials/trash_list.html" %}
+        {% else %}
+          {% include "notebooks/partials/notes_empty.html" %}
+        {% endif %}
+      </section>
+      <section id="editor-pane" :class="mobilePane === 'editor' ? 'block' : 'hidden lg:block'"
+               class="min-h-0 overflow-y-auto overscroll-contain rounded-2xl bg-grey-1 dark:bg-grey-1 shadow-flat p-6 border border-grey-2 max-lg:rounded-none max-lg:shadow-none max-lg:border-0 max-lg:px-4 max-lg:py-3 max-lg:pb-[calc(env(safe-area-inset-bottom,0px)+0.75rem)]">
+        {% if history %}
+          {% include "notebooks/partials/note_history.html" %}
+        {% elif trash_note %}
+          {% include "notebooks/partials/trash_note.html" %}
+        {% elif undecryptable %}
+          {% include "notebooks/partials/note_undecryptable.html" %}
+        {% elif active_note %}
+          {% include "notebooks/partials/note_editor.html" %}
+        {% else %}
+          {% include "notebooks/partials/editor_empty.html" %}
+        {% endif %}
+      </section>
+    </div>
+  </div>
+</div>
+{% endblock %}

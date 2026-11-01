@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}Create account · Notebooks{% endblock %}
+
+{% block main_class %}flex-1 min-h-0 overflow-y-auto overscroll-contain grid place-items-center px-horizontal{% endblock %}
+
+{% block content %}
+<div class="w-full max-w-sm bg-grey-1 dark:bg-grey-1 rounded-4xl shadow-flat p-8">
+  <h1 class="text-scale-3 font-semibold text-primary dark:text-secondary-shade-b mb-6">Create account</h1>
+
+  <form method="post" class="space-y-4">
+    {% csrf_token %}
+    {% for field in form %}
+    <div>
+      <label for="{{ field.id_for_label }}" class="block text-scale-neg-1 font-medium text-grey-5 mb-1">{{ field.label }}</label>
+      {{ field }}
+      {% if field.errors %}
+      <div id="{{ field.auto_id }}_error" role="alert">
+        {% for error in field.errors %}
+        <p class="text-scale-neg-1 text-danger mt-1">{{ error }}</p>
+        {% endfor %}
+      </div>
+      {% endif %}
+      {% if field.help_text %}
+      <p id="{{ field.auto_id }}_helptext" class="text-scale-neg-1 text-grey-5 mt-1">{{ field.help_text|safe }}</p>
+      {% endif %}
+    </div>
+    {% endfor %}
+    <button type="submit" class="w-full rounded-4xl bg-secondary text-white py-3 font-medium shadow-flat hover:shadow-convex active:shadow-pressed transition-shadow mt-4">
+      Create account
+    </button>
+  </form>
+
+  <p class="text-scale-neg-1 text-grey-5 mt-6">
+    Already have an account? <a href="{% url 'accounts:login' %}" class="text-interactive hover:underline transition-colors">Sign in</a>.
+  </p>
+</div>
+{% endblock %}

@@ -1,0 +1,11 @@
+<section id="notes-pane" hx-swap-oob="innerHTML">
+  {% if notebook_form %}
+    {% include "notebooks/partials/notebook_form.html" %}
+  {% elif active_notebook %}
+    {% include "notebooks/partials/notes_list.html" %}
+  {% elif trash %}
+    {% include "notebooks/partials/trash_list.html" %}
+  {% else %}
+    {% include "notebooks/partials/notes_empty.html" %}
+  {% endif %}
+</section>

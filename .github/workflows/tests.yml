@@ -1,0 +1,23 @@
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --frozen
+      - name: Run tests
+        run: |
+          export NOTES_KEK="$(uv run python -c 'from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())')"
+          uv run manage.py test
+        env:
+          DEBUG: "True"

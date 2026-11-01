@@ -1,0 +1,13 @@
+<section id="editor-pane" hx-swap-oob="innerHTML">
+  {% if history %}
+    {% include "notebooks/partials/note_history.html" %}
+  {% elif trash_note %}
+    {% include "notebooks/partials/trash_note.html" %}
+  {% elif undecryptable %}
+    {% include "notebooks/partials/note_undecryptable.html" %}
+  {% elif active_note %}
+    {% include "notebooks/partials/note_editor.html" %}
+  {% else %}
+    {% include "notebooks/partials/editor_empty.html" %}
+  {% endif %}
+</section>

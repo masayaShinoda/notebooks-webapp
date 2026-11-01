@@ -1,0 +1,602 @@
+@import 'tailwindcss';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Self-hosted Open Sans (SIL OFL 1.1) -- the --type-font-primary stack names
+   'Open Sans' first but nothing shipped the face, so it silently fell back to
+   the system sans. These are the Google Fonts v44 *variable* files (weight axis
+   300-800), one per subset -- a single file covers regular/semibold/bold. */
+@font-face {
+    font-family: 'Open Sans';
+    font-style: normal;
+    font-weight: 300 800;
+    font-display: swap;
+    src: url('../fonts/OpenSans-latin.woff2') format('woff2');
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+        U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+        U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+    font-family: 'Open Sans';
+    font-style: normal;
+    font-weight: 300 800;
+    font-display: swap;
+    src: url('../fonts/OpenSans-latin-ext.woff2') format('woff2');
+    unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF,
+        U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020,
+        U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@theme {
+    --radius-4xl: 2rem;
+    /* Masa radius scale. Only --radius-pill is a new utility -- sm/md/lg/xl live
+       as raw --radius-token-* on html (below) since Tailwind v4 already ships
+       --radius-sm..xl with different values that existing `rounded-*` utilities
+       depend on. Masa `md` (0.75rem) == Tailwind's `rounded-xl`, which is what
+       the templates already use, so corners are unchanged. */
+    --radius-pill: var(--radius-token-pill);
+
+    --color-primary: var(--clr-primary);
+    --color-primary-shade-a: var(--clr-primary-shade-a);
+    --color-secondary: var(--clr-secondary);
+    --color-secondary-shade-a: var(--clr-secondary-shade-a);
+    --color-secondary-shade-b: var(--clr-secondary-shade-b);
+    --color-grey-6: var(--clr-grey-6);
+    --color-grey-5: var(--clr-grey-5);
+    --color-grey-4: var(--clr-grey-4);
+    --color-grey-3: var(--clr-grey-3);
+    --color-grey-2: var(--clr-grey-2);
+    --color-grey-1: var(--clr-grey-1);
+
+    /* Semantic status palette (Masa "Semantic Colors") -> bg-warning, text-warning,
+       bg-warning-bg, ... likewise positive / negative. */
+    --color-warning: var(--clr-warning);
+    --color-warning-bg: var(--clr-warning-bg);
+    --color-positive: var(--clr-positive);
+    --color-positive-bg: var(--clr-positive-bg);
+    --color-negative: var(--clr-negative);
+    --color-negative-bg: var(--clr-negative-bg);
+
+    /* Semantic role aliases onto the grey scale (Masa) -> bg-surface,
+       bg-surface-card, text-text-body, text-text-muted, border-border. */
+    --color-surface: var(--clr-surface);
+    --color-surface-card: var(--clr-surface-card);
+    --color-text-body: var(--clr-text-body);
+    --color-text-muted: var(--clr-text-muted);
+    --color-border: var(--clr-border);
+
+    /* Theme-aware interactive accents -> text-interactive, hover:text-interactive,
+       text-danger, hover:text-danger. The raw brand colours are tuned for light
+       surfaces only (secondary #0077cc is ~3.4:1 on the dark surface, navy
+       primary ~1.2:1); these swap to the brighter shade in dark mode so text
+       links / icon buttons / focus rings stay >=4.5:1 both ways. `--clr-danger`
+       is for destructive-action text on surfaces -- distinct from the
+       chip-oriented --clr-negative / --clr-negative-bg pair. */
+    --color-interactive: var(--clr-interactive);
+    --color-danger: var(--clr-danger);
+
+    --font-primary: var(--type-font-primary);
+
+    /* Masa font-weight ladder. font-normal/bold already match Tailwind defaults;
+       only semibold (600) needs registering for `font-semibold`. */
+    --font-weight-semibold: var(--type-weight-semibold);
+
+    /* Masa line-height tokens -> leading-tight (overrides Tailwind's 1.25),
+       leading-body. */
+    --leading-tight: var(--type-line-tight);
+    --leading-body: var(--type-line-body);
+
+    --text-scale-7: var(--type-scale-7);
+    --text-scale-6: var(--type-scale-6);
+    --text-scale-5: var(--type-scale-5);
+    --text-scale-4: var(--type-scale-4);
+    --text-scale-3: var(--type-scale-3);
+    --text-scale-2: var(--type-scale-2);
+    --text-scale-1: var(--type-scale-1);
+    --text-scale-0: var(--type-scale-0);
+    --text-scale-neg-1: var(--type-scale--1);
+    --text-scale-neg-2: var(--type-scale--2);
+
+    --shadow-md: var(--shadow-token-md);
+    --shadow-pressed: var(--shadow-token-pressed);
+    --shadow-pressed-secondary: var(--shadow-token-pressed-secondary);
+    --shadow-flat: var(--shadow-token-flat);
+    --shadow-convex: var(--shadow-token-convex);
+    --shadow-raised: var(--shadow-token-raised);
+
+    --background-image-gradient-neutral: var(--clr-gradient-neutral);
+    --background-image-gradient-light: var(--clr-gradient-light);
+    --background-image-gradient-dark: var(--clr-gradient-dark);
+    --background-image-gradient-secondary: var(--clr-gradient-secondary);
+    --background-image-gradient-card: var(--clr-gradient-card);
+
+    --container-content-max: var(--content-max-width);
+
+    --spacing-horizontal: var(--padding-horizontal);
+
+    --breakpoint-sm: 32em;
+}
+
+html {
+    --type-font-primary:
+        'Open Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif, 'Apple Color Emoji',
+        'Segoe UI Emoji';
+
+    --clr-primary: #003153;
+    --clr-primary-shade-a: #004f86;
+    --clr-secondary: #0077cc;
+    --clr-secondary-shade-a: #0095ff;
+    --clr-secondary-shade-b: #33aaff;
+    --clr-heading: var(--clr-primary);
+
+    --clr-grey-6: #212429;
+    --clr-grey-5: #495057;
+    --clr-grey-4: #adb5bd;
+    --clr-grey-3: #ced4da;
+    --clr-grey-2: #e9ecef;
+    --clr-grey-1: #f8f9fa;
+
+    /* Semantic status palette (Masa). Each pairs a saturated colour with a pale
+       tint for status chips. Not theme-inverted -- the -bg tints are tuned for
+       light surfaces; revisit if these get used on dark backgrounds. */
+    --clr-warning: #e67700;
+    --clr-warning-bg: #fff3bf;
+    --clr-positive: #2b8a3e;
+    --clr-positive-bg: #d3f9d8;
+    --clr-negative: #c92a2a;
+    --clr-negative-bg: #ffe3e3;
+
+    /* Semantic role aliases so templates can stop hard-coding grey-N. These
+       follow the grey scale, so they invert with it in dark mode. */
+    --clr-surface: var(--clr-grey-1);
+    --clr-surface-card: var(--clr-grey-1);
+    --clr-text-body: var(--clr-grey-6);
+    --clr-text-muted: var(--clr-grey-5);
+    --clr-border: var(--clr-grey-3);
+
+    /* Theme-aware interactive accents (see the @theme note). Light values here;
+       html.dark overrides both. */
+    --clr-interactive: var(--clr-secondary);
+    --clr-danger: #dc2626;
+
+    --clr-gradient-neutral: linear-gradient(109deg, #fff 0%, var(--clr-grey-2) 100%);
+    --clr-gradient-light: linear-gradient(109deg, #fff 0%, var(--clr-grey-2) 100%);
+    --clr-gradient-dark: linear-gradient(119deg, var(--clr-grey-5) 0%, var(--clr-grey-6) 100%);
+    --clr-gradient-secondary: linear-gradient(
+        96deg,
+        var(--clr-secondary-shade-a) 0%,
+        var(--clr-secondary) 100%
+    );
+    --clr-gradient-card: linear-gradient(
+        106.93deg,
+        rgba(255, 255, 255, 0.05) 0%,
+        rgba(0, 119, 204, 0.05) 100%
+    );
+
+    --content-max-width: min(100%, 72.5rem);
+    --padding-horizontal: 2.5rem;
+
+    --type-scale-7: 4.76875rem;
+    --type-scale-6: 3.8125rem;
+    --type-scale-5: 3.05rem;
+    --type-scale-4: 2.44375rem;
+    --type-scale-3: 1.95625rem;
+    --type-scale-2: 1.5625rem;
+    --type-scale-1: 1.25rem;
+    --type-scale-0: 1rem;
+    --type-scale--1: 0.8rem;
+    --type-scale--2: 0.6375rem;
+
+    /* Masa type ladder metadata. Open Sans ships regular/semibold/bold only. */
+    --type-weight-regular: 400;
+    --type-weight-semibold: 600;
+    --type-weight-bold: 700;
+    --type-line-tight: 1.15;
+    --type-line-body: 1.5;
+
+    /* Masa radius scale, namespaced (see the --radius-pill note in @theme).
+       Reference these from hand-written CSS; templates use `rounded-*`. */
+    --radius-token-sm: 0.5rem;
+    --radius-token-md: 0.75rem;
+    --radius-token-lg: 1rem;
+    --radius-token-xl: 1.5rem;
+    --radius-token-pill: 999px;
+
+    --shadow-token-md: 0 0 8px rgba(0, 0, 0, 0.5);
+
+    /* Masa "pressed" (inset) shadows -- soft dual-direction, tuned per theme.
+       The previous values reused --clr-grey-5/6, which invert in dark mode and
+       produced a harsh near-white inset; the html.dark block now overrides. */
+    --shadow-token-pressed:
+        inset 3px 3px 6px rgba(173, 181, 189, 0.35), inset -3px -3px 6px rgba(255, 255, 255, 0.8);
+    --shadow-token-pressed-secondary:
+        inset 3px 3px 6px rgba(0, 49, 83, 0.09), inset -3px -3px 6px rgba(51, 170, 255, 0.2);
+
+    --shadow-token-flat: 8px 8px 16px 0px var(--clr-grey-3), -8px -8px 16px 0px #fff;
+    --shadow-token-convex: 4px 4px 8px 0px var(--clr-grey-3), -4px -4px 8px 0px #fff;
+
+    /* Directional drop shadow for things that genuinely float above the page
+       (the mobile FAB, the app-bar menu). Neumorphism assumes the element is
+       carved from the surface it sits on, which is wrong for an overlay, and
+       --shadow-token-md is an even glow with no sense of lift. */
+    --shadow-token-raised: 0 6px 16px rgba(0, 0, 0, 0.18);
+
+    /* Fixed accent palette for notebook color-coding. Applied via inline
+       `style="background-color: var(--notebook-color-X)"` rather than dynamic
+       Tailwind classes, since a template-interpolated class name like
+       `bg-{{ notebook.color }}-500` never appears literally in any file
+       Tailwind's scanner reads, so the utility would never be generated. */
+    --notebook-color-slate: #64748b;
+    --notebook-color-blue: #0077cc;
+    --notebook-color-teal: #0d9488;
+    --notebook-color-green: #16a34a;
+    --notebook-color-amber: #d97706;
+    --notebook-color-rose: #e11d48;
+    --notebook-color-purple: #7c3aed;
+    --notebook-color-grey: #495057;
+}
+
+html.dark {
+    /* Navy (--clr-primary) is illegible against the dark surfaces below --
+       ~1.2:1 contrast, far under WCAG's 3:1 floor for large text. Swap
+       headings to the same accent used for large text elsewhere in dark
+       mode (e.g. the auth-page h1's `dark:text-secondary-shade-b`). */
+    --clr-heading: var(--clr-secondary-shade-b);
+
+    /* Interactive accents: brighter shade so text links / icon buttons /
+       focus rings clear 4.5:1 on the dark surface (#212429). */
+    --clr-interactive: var(--clr-secondary-shade-b);
+    --clr-danger: #f87171;
+
+    /* The light #fff3bf wash would glare on the dark surface; keep an amber
+       tint dark enough for grey-6 body text (the status banner). */
+    --clr-warning-bg: #3d2e0a;
+
+    --clr-grey-1: #212429;
+    --clr-grey-2: #343a40;
+    --clr-grey-3: #495057;
+    --clr-grey-4: #adb5bd;
+    --clr-grey-5: #ced4da;
+    --clr-grey-6: #f8f9fa;
+
+    --clr-gradient-neutral: linear-gradient(119deg, #495057 0%, #212429 100%);
+
+    --shadow-token-flat: 0px 4px 4px 0px rgba(0, 0, 0, 0.25), 8px 8px 16px 0px #16181b;
+    --shadow-token-convex: 4px 4px 8px 0px rgba(0, 0, 0, 0.5), -4px -4px 8px 0px #16181b;
+    /* Needs to read against #212429, so it goes considerably deeper than light. */
+    --shadow-token-raised: 0 6px 18px rgba(0, 0, 0, 0.55);
+
+    /* Pressed shadows for dark surfaces (Masa): the light "highlight" edge drops
+       to a near-invisible white, the "shadow" edge to solid black. */
+    --shadow-token-pressed:
+        inset 3px 3px 6px rgba(0, 0, 0, 0.4), inset -3px -3px 6px rgba(255, 255, 255, 0.04);
+    --shadow-token-pressed-secondary:
+        inset 3px 3px 6px rgba(0, 0, 0, 0.35), inset -3px -3px 6px rgba(51, 170, 255, 0.15);
+}
+
+@media (max-width: 768px) {
+    html {
+        --padding-horizontal: 1rem;
+    }
+}
+
+body {
+    font-family: var(--type-font-primary);
+}
+
+/* @layer base so Tailwind utility classes (e.g. on the note title/body
+   fields, which want a bare/borderless look) always win regardless of
+   selector specificity -- utilities live in a later Tailwind layer than
+   base no matter how these selectors are written. */
+@layer base {
+    input[type='text'],
+    input[type='email'],
+    input[type='password'],
+    input[type='search'],
+    textarea {
+        width: 100%;
+        border-radius: var(--radius-token-md);
+        padding: 0.5rem 0.75rem;
+        background-color: var(--clr-surface);
+        color: var(--clr-text-body);
+        border: 1px solid var(--clr-border);
+        transition-property: box-shadow, border-color, background-color, outline-color, outline-offset;
+        transition-duration: 150ms;
+        transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    input[type='text']:focus,
+    input[type='email']:focus,
+    input[type='password']:focus,
+    input[type='search']:focus,
+    textarea:focus {
+        outline: 2px solid var(--color-interactive);
+        outline-offset: 1px;
+    }
+}
+
+/* Unlayered so it beats the @layer base / utility durations. Covers the input
+   elevation transition plus every template-level `transition-shadow`, the swatch
+   `hover:scale` transform, the #save-status fade-in keyframe, and Alpine
+   x-transitions. */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    ::before,
+    ::after {
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+    }
+}
+
+[x-cloak] {
+    display: none !important;
+}
+
+/* Every link/button gets the same keyboard focus ring (matches the outline
+   already used on text inputs) and loses the mobile tap delay -- applied
+   once here instead of per-template so new interactive elements inherit it
+   for free. */
+@layer base {
+    a,
+    button,
+    summary {
+        touch-action: manipulation;
+    }
+
+    /* Native <button> has no pointer cursor in this Tailwind build's Preflight;
+       <a> already does. Radio/checkbox labels are click targets too. */
+    button:not(:disabled),
+    [role='button'],
+    label:has(> :is(input[type='radio'], input[type='checkbox'])) {
+        cursor: pointer;
+    }
+
+    a:focus-visible,
+    button:focus-visible,
+    summary:focus-visible {
+        outline: 2px solid var(--color-interactive);
+        outline-offset: 2px;
+        border-radius: inherit;
+        transition: outline-offset 150ms ease, outline-color 150ms ease;
+    }
+
+    /* Firefox draws its own dotted inner border on buttons independent of
+       `outline`, layering on top of the custom focus ring above. No other
+       engine does this -- reset it explicitly. */
+    button::-moz-focus-inner,
+    input[type='button']::-moz-focus-inner,
+    input[type='submit']::-moz-focus-inner,
+    input[type='reset']::-moz-focus-inner {
+        border: 0;
+    }
+}
+
+@keyframes fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(-2px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+#save-status:not(:empty) {
+    animation: fade-in 0.2s ease-out;
+}
+
+/* Rendered markdown output (see notebooks/markdown.py render_markdown()).
+   Hand-written instead of pulling in @tailwindcss/typography, to keep this
+   project on the standalone Tailwind CLI with no Node/npm dependency. */
+@layer components {
+    .markdown-body h1,
+    .markdown-body h2,
+    .markdown-body h3,
+    .markdown-body h4 {
+        font-weight: var(--type-weight-semibold);
+        color: var(--clr-heading);
+        margin-top: 1em;
+        margin-bottom: 0.5em;
+    }
+    .markdown-body h1 { font-size: var(--type-scale-2); }
+    .markdown-body h2 { font-size: var(--type-scale-1); }
+    .markdown-body h3 { font-size: var(--type-scale-0); }
+    .markdown-body p { margin-bottom: 0.75em; line-height: 1.6; }
+    .markdown-body ul,
+    .markdown-body ol {
+        margin-bottom: 0.75em;
+        padding-left: 1.5em;
+    }
+    .markdown-body ul { list-style: disc; }
+    .markdown-body ol { list-style: decimal; }
+    .markdown-body blockquote {
+        border-left: 3px solid var(--clr-border);
+        padding-left: 1em;
+        color: var(--clr-text-muted);
+        margin-bottom: 0.75em;
+    }
+    .markdown-body code {
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 0.875em;
+        background-color: var(--clr-grey-2);
+        border-radius: 0.25rem;
+        padding: 0.1em 0.35em;
+    }
+    .markdown-body pre {
+        background-color: var(--clr-grey-2);
+        border-radius: var(--radius-token-md);
+        padding: 0.75em 1em;
+        overflow-x: auto;
+        margin-bottom: 0.75em;
+    }
+    .markdown-body pre code {
+        background-color: transparent;
+        padding: 0;
+    }
+    .markdown-body table {
+        border-collapse: collapse;
+        margin-bottom: 0.75em;
+        width: 100%;
+    }
+    .markdown-body th,
+    .markdown-body td {
+        border: 1px solid var(--clr-border);
+        padding: 0.4em 0.6em;
+        text-align: left;
+    }
+    .markdown-body a {
+        color: var(--clr-secondary);
+        text-decoration: underline;
+    }
+
+    /* Pygments syntax highlighting (codehilite extension): friendly (light) / nord (dark) */
+    .markdown-body .codehilite .c { color: #60A0B0; font-style: italic } /* Comment */
+    .markdown-body .codehilite .err { border: 1px solid #F00 } /* Error */
+    .markdown-body .codehilite .k { color: #007020; font-weight: bold } /* Keyword */
+    .markdown-body .codehilite .o { color: #666 } /* Operator */
+    .markdown-body .codehilite .ch { color: #60A0B0; font-style: italic } /* Comment.Hashbang */
+    .markdown-body .codehilite .cm { color: #60A0B0; font-style: italic } /* Comment.Multiline */
+    .markdown-body .codehilite .cp { color: #007020 } /* Comment.Preproc */
+    .markdown-body .codehilite .cpf { color: #60A0B0; font-style: italic } /* Comment.PreprocFile */
+    .markdown-body .codehilite .c1 { color: #60A0B0; font-style: italic } /* Comment.Single */
+    .markdown-body .codehilite .cs { color: #60A0B0; background-color: #FFF0F0 } /* Comment.Special */
+    .markdown-body .codehilite .gd { color: #A00000 } /* Generic.Deleted */
+    .markdown-body .codehilite .ge { font-style: italic } /* Generic.Emph */
+    .markdown-body .codehilite .ges { font-weight: bold; font-style: italic } /* Generic.EmphStrong */
+    .markdown-body .codehilite .gr { color: #F00 } /* Generic.Error */
+    .markdown-body .codehilite .gh { color: #000080; font-weight: bold } /* Generic.Heading */
+    .markdown-body .codehilite .gi { color: #00A000 } /* Generic.Inserted */
+    .markdown-body .codehilite .go { color: #888 } /* Generic.Output */
+    .markdown-body .codehilite .gp { color: #C65D09; font-weight: bold } /* Generic.Prompt */
+    .markdown-body .codehilite .gs { font-weight: bold } /* Generic.Strong */
+    .markdown-body .codehilite .gu { color: #800080; font-weight: bold } /* Generic.Subheading */
+    .markdown-body .codehilite .gt { color: #04D } /* Generic.Traceback */
+    .markdown-body .codehilite .kc { color: #007020; font-weight: bold } /* Keyword.Constant */
+    .markdown-body .codehilite .kd { color: #007020; font-weight: bold } /* Keyword.Declaration */
+    .markdown-body .codehilite .kn { color: #007020; font-weight: bold } /* Keyword.Namespace */
+    .markdown-body .codehilite .kp { color: #007020 } /* Keyword.Pseudo */
+    .markdown-body .codehilite .kr { color: #007020; font-weight: bold } /* Keyword.Reserved */
+    .markdown-body .codehilite .kt { color: #902000 } /* Keyword.Type */
+    .markdown-body .codehilite .m { color: #40A070 } /* Literal.Number */
+    .markdown-body .codehilite .s { color: #4070A0 } /* Literal.String */
+    .markdown-body .codehilite .na { color: #4070A0 } /* Name.Attribute */
+    .markdown-body .codehilite .nb { color: #007020 } /* Name.Builtin */
+    .markdown-body .codehilite .nc { color: #0E84B5; font-weight: bold } /* Name.Class */
+    .markdown-body .codehilite .no { color: #60ADD5 } /* Name.Constant */
+    .markdown-body .codehilite .nd { color: #555; font-weight: bold } /* Name.Decorator */
+    .markdown-body .codehilite .ni { color: #D55537; font-weight: bold } /* Name.Entity */
+    .markdown-body .codehilite .ne { color: #007020 } /* Name.Exception */
+    .markdown-body .codehilite .nf { color: #06287E } /* Name.Function */
+    .markdown-body .codehilite .nl { color: #002070; font-weight: bold } /* Name.Label */
+    .markdown-body .codehilite .nn { color: #0E84B5; font-weight: bold } /* Name.Namespace */
+    .markdown-body .codehilite .nt { color: #062873; font-weight: bold } /* Name.Tag */
+    .markdown-body .codehilite .nv { color: #BB60D5 } /* Name.Variable */
+    .markdown-body .codehilite .ow { color: #007020; font-weight: bold } /* Operator.Word */
+    .markdown-body .codehilite .w { color: #BBB } /* Text.Whitespace */
+    .markdown-body .codehilite .mb { color: #40A070 } /* Literal.Number.Bin */
+    .markdown-body .codehilite .mf { color: #40A070 } /* Literal.Number.Float */
+    .markdown-body .codehilite .mh { color: #40A070 } /* Literal.Number.Hex */
+    .markdown-body .codehilite .mi { color: #40A070 } /* Literal.Number.Integer */
+    .markdown-body .codehilite .mo { color: #40A070 } /* Literal.Number.Oct */
+    .markdown-body .codehilite .sa { color: #4070A0 } /* Literal.String.Affix */
+    .markdown-body .codehilite .sb { color: #4070A0 } /* Literal.String.Backtick */
+    .markdown-body .codehilite .sc { color: #4070A0 } /* Literal.String.Char */
+    .markdown-body .codehilite .dl { color: #4070A0 } /* Literal.String.Delimiter */
+    .markdown-body .codehilite .sd { color: #4070A0; font-style: italic } /* Literal.String.Doc */
+    .markdown-body .codehilite .s2 { color: #4070A0 } /* Literal.String.Double */
+    .markdown-body .codehilite .se { color: #4070A0; font-weight: bold } /* Literal.String.Escape */
+    .markdown-body .codehilite .sh { color: #4070A0 } /* Literal.String.Heredoc */
+    .markdown-body .codehilite .si { color: #70A0D0; font-style: italic } /* Literal.String.Interpol */
+    .markdown-body .codehilite .sx { color: #C65D09 } /* Literal.String.Other */
+    .markdown-body .codehilite .sr { color: #235388 } /* Literal.String.Regex */
+    .markdown-body .codehilite .s1 { color: #4070A0 } /* Literal.String.Single */
+    .markdown-body .codehilite .ss { color: #517918 } /* Literal.String.Symbol */
+    .markdown-body .codehilite .bp { color: #007020 } /* Name.Builtin.Pseudo */
+    .markdown-body .codehilite .fm { color: #06287E } /* Name.Function.Magic */
+    .markdown-body .codehilite .vc { color: #BB60D5 } /* Name.Variable.Class */
+    .markdown-body .codehilite .vg { color: #BB60D5 } /* Name.Variable.Global */
+    .markdown-body .codehilite .vi { color: #BB60D5 } /* Name.Variable.Instance */
+    .markdown-body .codehilite .vm { color: #BB60D5 } /* Name.Variable.Magic */
+    .markdown-body .codehilite .il { color: #40A070 } /* Literal.Number.Integer.Long */
+
+    .dark .markdown-body .codehilite .c { color: #616E87; font-style: italic } /* Comment */
+    .dark .markdown-body .codehilite .err { color: #BF616A } /* Error */
+    .dark .markdown-body .codehilite .esc { color: #D8DEE9 } /* Escape */
+    .dark .markdown-body .codehilite .g { color: #D8DEE9 } /* Generic */
+    .dark .markdown-body .codehilite .k { color: #81A1C1; font-weight: bold } /* Keyword */
+    .dark .markdown-body .codehilite .l { color: #D8DEE9 } /* Literal */
+    .dark .markdown-body .codehilite .n { color: #D8DEE9 } /* Name */
+    .dark .markdown-body .codehilite .o { color: #81A1C1; font-weight: bold } /* Operator */
+    .dark .markdown-body .codehilite .x { color: #D8DEE9 } /* Other */
+    .dark .markdown-body .codehilite .p { color: #ECEFF4 } /* Punctuation */
+    .dark .markdown-body .codehilite .ch { color: #616E87; font-style: italic } /* Comment.Hashbang */
+    .dark .markdown-body .codehilite .cm { color: #616E87; font-style: italic } /* Comment.Multiline */
+    .dark .markdown-body .codehilite .cp { color: #5E81AC; font-style: italic } /* Comment.Preproc */
+    .dark .markdown-body .codehilite .cpf { color: #616E87; font-style: italic } /* Comment.PreprocFile */
+    .dark .markdown-body .codehilite .c1 { color: #616E87; font-style: italic } /* Comment.Single */
+    .dark .markdown-body .codehilite .cs { color: #616E87; font-style: italic } /* Comment.Special */
+    .dark .markdown-body .codehilite .gd { color: #BF616A } /* Generic.Deleted */
+    .dark .markdown-body .codehilite .ge { color: #D8DEE9; font-style: italic } /* Generic.Emph */
+    .dark .markdown-body .codehilite .ges { color: #D8DEE9; font-weight: bold; font-style: italic } /* Generic.EmphStrong */
+    .dark .markdown-body .codehilite .gr { color: #BF616A } /* Generic.Error */
+    .dark .markdown-body .codehilite .gh { color: #88C0D0; font-weight: bold } /* Generic.Heading */
+    .dark .markdown-body .codehilite .gi { color: #A3BE8C } /* Generic.Inserted */
+    .dark .markdown-body .codehilite .go { color: #D8DEE9 } /* Generic.Output */
+    .dark .markdown-body .codehilite .gp { color: #616E88; font-weight: bold } /* Generic.Prompt */
+    .dark .markdown-body .codehilite .gs { color: #D8DEE9; font-weight: bold } /* Generic.Strong */
+    .dark .markdown-body .codehilite .gu { color: #88C0D0; font-weight: bold } /* Generic.Subheading */
+    .dark .markdown-body .codehilite .gt { color: #BF616A } /* Generic.Traceback */
+    .dark .markdown-body .codehilite .kc { color: #81A1C1; font-weight: bold } /* Keyword.Constant */
+    .dark .markdown-body .codehilite .kd { color: #81A1C1; font-weight: bold } /* Keyword.Declaration */
+    .dark .markdown-body .codehilite .kn { color: #81A1C1; font-weight: bold } /* Keyword.Namespace */
+    .dark .markdown-body .codehilite .kp { color: #81A1C1 } /* Keyword.Pseudo */
+    .dark .markdown-body .codehilite .kr { color: #81A1C1; font-weight: bold } /* Keyword.Reserved */
+    .dark .markdown-body .codehilite .kt { color: #81A1C1 } /* Keyword.Type */
+    .dark .markdown-body .codehilite .ld { color: #D8DEE9 } /* Literal.Date */
+    .dark .markdown-body .codehilite .m { color: #B48EAD } /* Literal.Number */
+    .dark .markdown-body .codehilite .s { color: #A3BE8C } /* Literal.String */
+    .dark .markdown-body .codehilite .na { color: #8FBCBB } /* Name.Attribute */
+    .dark .markdown-body .codehilite .nb { color: #81A1C1 } /* Name.Builtin */
+    .dark .markdown-body .codehilite .nc { color: #8FBCBB } /* Name.Class */
+    .dark .markdown-body .codehilite .no { color: #8FBCBB } /* Name.Constant */
+    .dark .markdown-body .codehilite .nd { color: #D08770 } /* Name.Decorator */
+    .dark .markdown-body .codehilite .ni { color: #D08770 } /* Name.Entity */
+    .dark .markdown-body .codehilite .ne { color: #BF616A } /* Name.Exception */
+    .dark .markdown-body .codehilite .nf { color: #88C0D0 } /* Name.Function */
+    .dark .markdown-body .codehilite .nl { color: #D8DEE9 } /* Name.Label */
+    .dark .markdown-body .codehilite .nn { color: #8FBCBB } /* Name.Namespace */
+    .dark .markdown-body .codehilite .nx { color: #D8DEE9 } /* Name.Other */
+    .dark .markdown-body .codehilite .py { color: #D8DEE9 } /* Name.Property */
+    .dark .markdown-body .codehilite .nt { color: #81A1C1 } /* Name.Tag */
+    .dark .markdown-body .codehilite .nv { color: #D8DEE9 } /* Name.Variable */
+    .dark .markdown-body .codehilite .ow { color: #81A1C1; font-weight: bold } /* Operator.Word */
+    .dark .markdown-body .codehilite .pm { color: #ECEFF4 } /* Punctuation.Marker */
+    .dark .markdown-body .codehilite .w { color: #D8DEE9 } /* Text.Whitespace */
+    .dark .markdown-body .codehilite .mb { color: #B48EAD } /* Literal.Number.Bin */
+    .dark .markdown-body .codehilite .mf { color: #B48EAD } /* Literal.Number.Float */
+    .dark .markdown-body .codehilite .mh { color: #B48EAD } /* Literal.Number.Hex */
+    .dark .markdown-body .codehilite .mi { color: #B48EAD } /* Literal.Number.Integer */
+    .dark .markdown-body .codehilite .mo { color: #B48EAD } /* Literal.Number.Oct */
+    .dark .markdown-body .codehilite .sa { color: #A3BE8C } /* Literal.String.Affix */
+    .dark .markdown-body .codehilite .sb { color: #A3BE8C } /* Literal.String.Backtick */
+    .dark .markdown-body .codehilite .sc { color: #A3BE8C } /* Literal.String.Char */
+    .dark .markdown-body .codehilite .dl { color: #A3BE8C } /* Literal.String.Delimiter */
+    .dark .markdown-body .codehilite .sd { color: #616E87 } /* Literal.String.Doc */
+    .dark .markdown-body .codehilite .s2 { color: #A3BE8C } /* Literal.String.Double */
+    .dark .markdown-body .codehilite .se { color: #EBCB8B } /* Literal.String.Escape */
+    .dark .markdown-body .codehilite .sh { color: #A3BE8C } /* Literal.String.Heredoc */
+    .dark .markdown-body .codehilite .si { color: #A3BE8C } /* Literal.String.Interpol */
+    .dark .markdown-body .codehilite .sx { color: #A3BE8C } /* Literal.String.Other */
+    .dark .markdown-body .codehilite .sr { color: #EBCB8B } /* Literal.String.Regex */
+    .dark .markdown-body .codehilite .s1 { color: #A3BE8C } /* Literal.String.Single */
+    .dark .markdown-body .codehilite .ss { color: #A3BE8C } /* Literal.String.Symbol */
+    .dark .markdown-body .codehilite .bp { color: #81A1C1 } /* Name.Builtin.Pseudo */
+    .dark .markdown-body .codehilite .fm { color: #88C0D0 } /* Name.Function.Magic */
+    .dark .markdown-body .codehilite .vc { color: #D8DEE9 } /* Name.Variable.Class */
+    .dark .markdown-body .codehilite .vg { color: #D8DEE9 } /* Name.Variable.Global */
+    .dark .markdown-body .codehilite .vi { color: #D8DEE9 } /* Name.Variable.Instance */
+    .dark .markdown-body .codehilite .vm { color: #D8DEE9 } /* Name.Variable.Magic */
+    .dark .markdown-body .codehilite .il { color: #B48EAD } /* Literal.Number.Integer.Long */
+}

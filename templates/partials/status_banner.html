@@ -1,0 +1,27 @@
+{% comment %}
+App-wide connection/session banner, rendered from $store.app (static/js/app-errors.js).
+Only the state that needs the user most is shown. The live region stays
+mounted so screen readers announce changes; it cannot be dismissed while
+the state lasts.
+{% endcomment %}
+<div x-data role="status" aria-live="polite" class="shrink-0">
+  <div x-show="$store.app.banner" x-cloak x-transition.opacity.duration.150ms
+       class="flex items-center justify-center gap-3 flex-wrap px-horizontal py-2 bg-warning-bg text-grey-6 text-scale-neg-1 text-center border-b border-grey-2">
+    <template x-if="$store.app.banner === 'session'">
+      <p>
+        Your session expired. Sign in to keep saving — your unsaved changes are kept on this device.
+        <a :href="'{% url 'accounts:login' %}?next=' + encodeURIComponent(location.pathname)"
+           class="ml-1 font-semibold text-interactive underline">Sign in</a>
+      </p>
+    </template>
+    <template x-if="$store.app.banner === 'stale'">
+      <p>
+        This page is out of date. Reload to keep saving — your changes are kept on this device.
+        <button type="button" @click="location.reload()" class="ml-1 font-semibold text-interactive underline">Reload</button>
+      </p>
+    </template>
+    <template x-if="$store.app.banner === 'offline'">
+      <p>You've lost connection. Changes are saved on this device and will sync when you're back online.</p>
+    </template>
+  </div>
+</div>

@@ -1,0 +1,11 @@
+{% comment %}
+Swapped into #editor-pane when an htmx request hits an item that no longer
+exists (see htmx_not_found in views.py). The rail and notes pane are
+refreshed alongside it by OOB swaps.
+{% endcomment %}
+<div class="h-full grid place-items-center text-center text-grey-5">
+  <div class="space-y-2">
+    <p class="font-semibold text-grey-6">This {{ gone_noun }} no longer exists</p>
+    <p class="text-scale-neg-1">It may have been deleted in another tab or on another device.</p>
+  </div>
+</div>

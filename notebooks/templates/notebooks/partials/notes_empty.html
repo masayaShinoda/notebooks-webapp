@@ -1,0 +1,7 @@
+<div class="h-full grid place-items-center text-center">
+  <div>
+    <p class="text-grey-5 mb-3">Select a notebook, or create a new one, to see its notes.</p>
+    <a href="{% url 'notebooks:notebook_create' %}" hx-get="{% url 'notebooks:notebook_create' %}" hx-target="#notes-pane"
+       class="text-interactive hover:underline text-scale-neg-1 transition-colors">+ New notebook</a>
+  </div>
+</div>

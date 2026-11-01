@@ -1,0 +1,38 @@
+<div class="flex items-center justify-between mb-5 gap-2 max-lg:mb-3">
+  <h2 class="text-scale-1 font-semibold truncate">{{ active_notebook.title }}</h2>
+  <div class="flex items-center gap-3 shrink-0">
+    <a href="{% url 'notebooks:notebook_update' active_notebook.id %}"
+       hx-get="{% url 'notebooks:notebook_update' active_notebook.id %}" hx-target="#notes-pane"
+       class="py-1 text-scale-neg-1 text-grey-5 hover:text-interactive transition-colors max-lg:py-2.5 max-lg:px-1">Edit</a>
+    <form hx-post="{% url 'notebooks:notebook_delete' active_notebook.id %}" hx-target="#notes-pane">
+      {% csrf_token %}
+      <button type="submit" class="py-1 text-scale-neg-1 text-grey-5 hover:text-danger transition-colors max-lg:py-2.5 max-lg:px-1">Delete</button>
+    </form>
+  </div>
+</div>
+
+{% comment %}
+Desktop keeps the inline raised button; on mobile it becomes a FAB so the list
+starts at the top of the screen the way a native list does.
+{% endcomment %}
+<form hx-post="{% url 'notebooks:note_create' active_notebook.id %}" hx-target="#editor-pane" class="max-lg:hidden">
+  {% csrf_token %}
+  <button type="submit" class="w-full text-center rounded-xl shadow-flat hover:shadow-convex active:shadow-pressed py-2.5 mb-5 text-interactive text-scale-neg-1 font-medium transition-shadow">
+    + New note
+  </button>
+</form>
+<form hx-post="{% url 'notebooks:note_create' active_notebook.id %}" hx-target="#editor-pane" class="lg:hidden">
+  {% csrf_token %}
+  <button type="submit" aria-label="New note" title="New note"
+          class="fixed z-20 right-4 bottom-[calc(env(safe-area-inset-bottom,0px)+1.25rem)] w-14 h-14 grid place-items-center rounded-full bg-secondary text-white text-scale-2 shadow-raised">
+    +
+  </button>
+</form>
+
+<div id="notes-list-{{ active_notebook.id }}" class="space-y-1.5 max-lg:space-y-0">
+  {% for note in notes %}
+    {% include "notebooks/partials/note_row.html" %}
+  {% empty %}
+  <p class="text-scale-neg-1 text-grey-5">No notes yet.</p>
+  {% endfor %}
+</div>

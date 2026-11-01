@@ -1,0 +1,22 @@
+__pycache__/
+*.pyc
+.venv/
+.env
+db.sqlite3
+db.sqlite3-wal
+db.sqlite3-shm
+staticfiles/
+*.sqlite3
+.DS_Store
+
+# Local AI-assistant config and notes -- kept out of the public repo.
+.claude/
+CLAUDE.md
+
+# Vendored standalone Tailwind CLI binary (~100MB, platform-specific) --
+# download fresh instead of committing: https://github.com/tailwindlabs/tailwindcss/releases/latest
+/tailwindcss
+
+# NOTE: static/css/app.css is intentionally NOT ignored. The compiled
+# stylesheet is committed so deploys need neither Node nor the Tailwind
+# binary -- build it locally and commit it. See DEPLOY.md.

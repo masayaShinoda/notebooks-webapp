@@ -1,0 +1,15 @@
+{% comment %}
+Shown instead of note_editor.html when the note's content fails to decrypt.
+Deliberately has no editor form: autosave would overwrite the stored
+ciphertext, which may still be recoverable with the right key.
+{% endcomment %}
+<div class="h-full grid place-items-center text-center text-grey-5">
+  <div class="max-w-md space-y-3">
+    <p class="font-semibold text-grey-6">This note can't be decrypted</p>
+    <p class="text-scale-neg-1">Its content is still stored, but the key needed to read it doesn't match. Ask the administrator to check the server's encryption key; editing is disabled so nothing gets overwritten.</p>
+    <form hx-post="{% url 'notebooks:note_delete' active_notebook.id active_note.id %}" hx-target="#editor-pane">
+      {% csrf_token %}
+      <button type="submit" class="py-2 text-scale-neg-1 text-grey-5 hover:text-danger transition-colors">Move to trash</button>
+    </form>
+  </div>
+</div>

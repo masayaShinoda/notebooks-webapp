@@ -1,0 +1,69 @@
+{% comment %}
+Swapped into #editor-pane in place of the editor (note_history in views.py).
+Read-only: nothing here autosaves. Below lg there is room for one column, so
+the list shows until a revision is picked, then that revision's preview.
+{% endcomment %}
+<div class="@container h-full flex flex-col">
+  <div class="shrink-0 flex items-center justify-between mb-5 gap-2 max-lg:mb-2">
+    <h2 class="text-scale-neg-1 font-semibold text-grey-5">Version history</h2>
+    <div class="flex items-center gap-3 shrink-0">
+      {% if selected_revision %}
+      <a href="{% url 'notebooks:note_history' active_notebook.id active_note.id %}"
+         hx-get="{% url 'notebooks:note_history' active_notebook.id active_note.id %}" hx-target="#editor-pane"
+         class="@xl:hidden py-2.5 px-1 text-scale-neg-1 text-grey-5 hover:text-interactive transition-colors">All versions</a>
+      {% endif %}
+      <a href="{% url 'notebooks:note_detail' active_notebook.id active_note.id %}"
+         hx-get="{% url 'notebooks:note_detail' active_notebook.id active_note.id %}" hx-target="#editor-pane"
+         class="py-1 text-scale-neg-1 font-medium text-interactive transition-colors max-lg:py-2.5 max-lg:px-1">Back to editor</a>
+    </div>
+  </div>
+
+  <div class="flex-1 min-h-0 grid grid-cols-1 @xl:grid-cols-[15rem_minmax(0,1fr)] gap-4 md:gap-6">
+    <nav aria-label="Versions" class="min-h-0 overflow-y-auto space-y-1.5 {% if selected_revision %}@max-xl:hidden{% endif %}">
+      <a href="{% url 'notebooks:note_history' active_notebook.id active_note.id %}"
+         hx-get="{% url 'notebooks:note_history' active_notebook.id active_note.id %}" hx-target="#editor-pane"
+         {% if not selected_revision %}aria-current="page"{% endif %}
+         class="block rounded-xl px-3 py-2.5 transition-shadow {% if not selected_revision %}shadow-pressed{% else %}hover:shadow-convex active:shadow-pressed{% endif %}">
+        <span class="block text-scale-0">Current version</span>
+        <span class="block text-scale-neg-2 text-grey-5 mt-0.5">{{ active_note.updated_at|date:"j M Y, g:i A" }}</span>
+      </a>
+      {% for revision in revisions %}
+      {% ifchanged revision.created_at.date %}
+      <h3 class="pt-3 px-3 text-scale-neg-2 font-semibold text-grey-5">{{ revision.created_at|date:"l, j F Y" }}</h3>
+      {% endifchanged %}
+      <a href="{% url 'notebooks:note_revision' active_notebook.id active_note.id revision.id %}"
+         hx-get="{% url 'notebooks:note_revision' active_notebook.id active_note.id revision.id %}" hx-target="#editor-pane"
+         {% if selected_revision.id == revision.id %}aria-current="page"{% endif %}
+         class="block rounded-xl px-3 py-2.5 transition-shadow {% if selected_revision.id == revision.id %}shadow-pressed{% else %}hover:shadow-convex active:shadow-pressed{% endif %}">
+        <span class="block text-scale-0">{{ revision.created_at|date:"g:i A" }}</span>
+        <span class="block text-scale-neg-2 text-grey-5 mt-0.5 truncate">{{ revision.title }}</span>
+      </a>
+      {% empty %}
+      <p class="pt-3 px-3 text-scale-neg-1 text-grey-5">No earlier versions yet. They're kept automatically as you write.</p>
+      {% endfor %}
+    </nav>
+
+    <div class="min-h-0 flex flex-col gap-4 {% if not selected_revision %}@max-xl:hidden{% endif %}">
+      <div class="shrink-0 flex flex-wrap items-center gap-3">
+        <h3 class="text-scale-2 font-semibold min-w-0 truncate">{% if selected_revision %}{{ selected_revision.title }}{% else %}{{ active_note.title }}{% endif %}</h3>
+        {% if selected_revision and preview_html is not None %}
+        <form hx-post="{% url 'notebooks:note_restore' active_notebook.id active_note.id selected_revision.id %}" hx-target="#editor-pane" class="ml-auto">
+          {% csrf_token %}
+          <button type="submit" class="rounded-4xl bg-secondary text-white px-5 py-2 font-medium shadow-flat hover:shadow-convex active:shadow-pressed transition-shadow">
+            Restore this version
+          </button>
+        </form>
+        {% endif %}
+      </div>
+      <p class="shrink-0 -mt-2 text-scale-neg-2 text-grey-5">
+        {% if selected_revision %}Saved {{ selected_revision.created_at|date:"l, j F Y, g:i A" }}{% else %}The note as it is now{% endif %}
+        <span id="history-status" class="ml-2"></span>
+      </p>
+      {% if preview_html is None %}
+      <p class="text-scale-neg-1 text-grey-5">This version can't be decrypted, so it can't be shown or restored.</p>
+      {% else %}
+      <div class="markdown-body flex-1 min-h-0 rounded-xl shadow-flat p-4 overflow-y-auto max-lg:rounded-none max-lg:shadow-none max-lg:p-0">{{ preview_html|safe }}</div>
+      {% endif %}
+    </div>
+  </div>
+</div>

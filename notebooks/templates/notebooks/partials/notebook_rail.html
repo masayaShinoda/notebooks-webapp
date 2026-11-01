@@ -1,0 +1,37 @@
+{% comment %}
+Below lg the mobile app bar already says "Notebooks", so the heading would just
+repeat it, and the raised "+" becomes a floating action button instead.
+{% endcomment %}
+<div class="flex items-center justify-between mb-4 max-lg:hidden">
+  <h2 class="text-scale-neg-1 font-semibold text-grey-5">Notebooks</h2>
+  <a href="{% url 'notebooks:notebook_create' %}"
+     hx-get="{% url 'notebooks:notebook_create' %}" hx-target="#notes-pane"
+     class="w-8 h-8 grid place-items-center rounded-full text-interactive shadow-flat hover:shadow-convex active:shadow-pressed transition-shadow" title="New notebook" aria-label="New notebook">+</a>
+</div>
+<a href="{% url 'notebooks:notebook_create' %}"
+   hx-get="{% url 'notebooks:notebook_create' %}" hx-target="#notes-pane"
+   class="lg:hidden fixed z-20 right-4 bottom-[calc(env(safe-area-inset-bottom,0px)+1.25rem)] w-14 h-14 grid place-items-center rounded-full bg-secondary text-white text-scale-2 shadow-raised" title="New notebook" aria-label="New notebook">+</a>
+<nav aria-label="Notebooks" class="space-y-1.5 max-lg:space-y-0">
+  {% for notebook in notebooks %}
+  <a href="{% url 'notebooks:notebook_detail' notebook.id %}"
+     hx-get="{% url 'notebooks:notebook_detail' notebook.id %}" hx-target="#notes-pane" hx-push-url="true"
+     {% if active_notebook.id == notebook.id %}aria-current="page"{% endif %}
+     class="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-scale-0 transition-shadow max-lg:rounded-none max-lg:px-1 max-lg:py-3 max-lg:min-h-[3.25rem] max-lg:border-b max-lg:border-grey-2 {% if active_notebook.id == notebook.id %}shadow-pressed max-lg:shadow-none max-lg:bg-grey-2{% else %}hover:shadow-convex active:shadow-pressed max-lg:hover:shadow-none max-lg:active:shadow-none{% endif %}">
+    <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color: var(--notebook-color-{{ notebook.color }})"></span>
+    <span class="truncate">{{ notebook.title }}</span>
+    {# Drill-down affordance: on mobile this row navigates to another screen. #}
+    <svg viewBox="0 0 24 24" fill="currentColor" class="lg:hidden ml-auto w-4 h-4 shrink-0 text-grey-4" aria-hidden="true"><path d="M13.1717 12.0007L8.22192 7.05093L9.63614 5.63672L16.0001 12.0007L9.63614 18.3646L8.22192 16.9504L13.1717 12.0007Z"/></svg>
+  </a>
+  {% empty %}
+  <p class="text-scale-neg-1 text-grey-5">No notebooks yet.</p>
+  {% endfor %}
+</nav>
+<div class="mt-4 pt-4 border-t border-grey-2 max-lg:mt-0 max-lg:pt-0 max-lg:border-t-0">
+<a href="{% url 'notebooks:trash' %}"
+   hx-get="{% url 'notebooks:trash' %}" hx-target="#notes-pane" hx-push-url="true"
+   {% if trash %}aria-current="page"{% endif %}
+   class="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-scale-neg-1 text-grey-5 transition-shadow max-lg:rounded-none max-lg:px-1 max-lg:py-3 max-lg:min-h-[3.25rem] {% if trash %}shadow-pressed text-grey-6 max-lg:shadow-none max-lg:bg-grey-2{% else %}hover:shadow-convex active:shadow-pressed max-lg:hover:shadow-none max-lg:active:shadow-none{% endif %}">
+  <svg viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4 shrink-0" aria-hidden="true"><path d="M17 6H22V8H20V21C20 21.5523 19.5523 22 19 22H5C4.44772 22 4 21.5523 4 21V8H2V6H7V3C7 2.44772 7.44772 2 8 2H16C16.5523 2 17 2.44772 17 3V6ZM18 8H6V20H18V8ZM9 11H11V17H9V11ZM13 11H15V17H13V11ZM9 4V6H15V4H9Z"/></svg>
+  <span>Trash</span>
+</a>
+</div>

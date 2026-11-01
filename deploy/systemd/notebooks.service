@@ -1,0 +1,57 @@
+# Install to /etc/systemd/system/notebooks.service
+#
+# Substitute `deploy` and /home/deploy/web/notebooks throughout if your service
+# user or install path differ. Enable the SOCKET, not this unit:
+#   systemctl enable --now notebooks.socket
+
+[Unit]
+Description=Notebooks (Django) via gunicorn
+Requires=notebooks.socket
+After=network-online.target notebooks.socket
+Wants=network-online.target
+
+[Service]
+# gunicorn supports sd_notify, so systemd waits for workers to be up before
+# reporting the service as started.
+Type=notify
+User=deploy
+Group=deploy
+WorkingDirectory=/home/deploy/web/notebooks
+
+# No RuntimeDirectory= here. notebooks.socket creates /run/notebooks itself,
+# and RuntimeDirectory= would break it two ways: on start systemd chowns the
+# directory's contents to User:Group (deploy:deploy), stripping the socket's
+# www-data group so nginx gets "Permission denied"; on stop it deletes the
+# directory, socket included, while notebooks.socket is still listening.
+
+# The venv binary directly, rather than `uv run`: uv is a deploy-time tool, and
+# keeping it out of the runtime path means no cache writes, no lockfile
+# revalidation, and one less thing between systemd and the process.
+#
+# No --bind -- the listening socket is inherited from notebooks.socket.
+ExecStart=/home/deploy/web/notebooks/.venv/bin/gunicorn \
+    --config deploy/gunicorn.conf.py \
+    config.wsgi:application
+
+ExecReload=/bin/kill -s HUP $MAINPID
+Restart=on-failure
+RestartSec=5s
+
+# --- Sandboxing ------------------------------------------------------------
+# ProtectSystem=strict mounts the whole filesystem read-only, so every path the
+# app writes to must be listed explicitly. Here that is only the SQLite
+# database's DIRECTORY -- the directory, not just the file, because WAL mode
+# creates `-wal` and `-shm` sidecars alongside it.
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ReadWritePaths=/home/deploy/web/notebooks
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+RestrictRealtime=true
+LockPersonality=true
+
+[Install]
+WantedBy=multi-user.target

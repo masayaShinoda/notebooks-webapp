@@ -1,0 +1,76 @@
+{% comment %}
+#notes-pane content for the trash (_trash_response in views.py). A trashed
+notebook is one row -- its notes come back with it and aren't listed on their
+own. Every form here posts next=trash so the response re-renders this list.
+{% endcomment %}
+<div class="flex items-center justify-between mb-2 gap-2">
+  <h2 class="text-scale-1 font-semibold truncate">Trash</h2>
+  {% if trashed_notebooks or trashed_notes %}
+  <form hx-post="{% url 'notebooks:trash_empty' %}" hx-target="#notes-pane"
+        hx-confirm="Permanently delete everything in the trash? This can't be undone.">
+    {% csrf_token %}
+    <button type="submit" class="py-1 text-scale-neg-1 text-grey-5 hover:text-danger transition-colors max-lg:py-2.5 max-lg:px-1">Empty trash</button>
+  </form>
+  {% endif %}
+</div>
+<p class="text-scale-neg-2 text-grey-5 mb-5 max-lg:mb-3">Items stay here until you delete them forever.</p>
+
+{% if trashed_notebooks %}
+<h3 class="text-scale-neg-1 font-semibold text-grey-5 mb-2">Notebooks</h3>
+<div class="space-y-1.5 mb-5 max-lg:space-y-0">
+  {% for notebook in trashed_notebooks %}
+  <div class="rounded-xl px-3 py-2.5 max-lg:rounded-none max-lg:px-1 max-lg:py-3 max-lg:border-b max-lg:border-grey-2">
+    <div class="flex items-center gap-2.5 min-w-0">
+      <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color: var(--notebook-color-{{ notebook.color }})"></span>
+      <span class="text-scale-0 truncate">{{ notebook.title }}</span>
+    </div>
+    <p class="text-scale-neg-2 text-grey-5 mt-0.5">{{ notebook.note_count }} note{{ notebook.note_count|pluralize }} · deleted {{ notebook.deleted_at|timesince }} ago</p>
+    <div class="flex items-center gap-4 mt-1">
+      <form hx-post="{% url 'notebooks:trash_restore_notebook' notebook.id %}" hx-target="#notes-pane">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="trash">
+        <button type="submit" class="py-1 text-scale-neg-1 font-medium text-interactive max-lg:py-2">Restore</button>
+      </form>
+      <form hx-post="{% url 'notebooks:trash_delete_notebook' notebook.id %}" hx-target="#notes-pane"
+            hx-confirm="Permanently delete “{{ notebook.title }}” and all its notes? This can't be undone.">
+        {% csrf_token %}
+        <button type="submit" class="py-1 text-scale-neg-1 text-grey-5 hover:text-danger transition-colors max-lg:py-2">Delete forever</button>
+      </form>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+{% if trashed_notes %}
+<h3 class="text-scale-neg-1 font-semibold text-grey-5 mb-2">Notes</h3>
+<div class="space-y-1.5 max-lg:space-y-0">
+  {% for note in trashed_notes %}
+  <div class="rounded-xl transition-shadow max-lg:rounded-none max-lg:border-b max-lg:border-grey-2 {% if trash_note.id == note.id %}shadow-pressed max-lg:shadow-none max-lg:bg-grey-2{% endif %}">
+    <a href="{% url 'notebooks:trash_note' note.id %}"
+       hx-get="{% url 'notebooks:trash_note' note.id %}" hx-target="#editor-pane" hx-push-url="true"
+       {% if trash_note.id == note.id %}aria-current="page"{% endif %}
+       class="block px-3 pt-2.5 max-lg:px-1 max-lg:pt-3">
+      <span class="block text-scale-0 truncate">{{ note.title }}</span>
+      <span class="block text-scale-neg-2 text-grey-5 mt-0.5 truncate">in {{ note.notebook.title }} · deleted {{ note.deleted_at|timesince }} ago</span>
+    </a>
+    <div class="flex items-center gap-4 px-3 pb-2.5 mt-1 max-lg:px-1 max-lg:pb-3">
+      <form hx-post="{% url 'notebooks:trash_restore_note' note.id %}" hx-target="#notes-pane">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="trash">
+        <button type="submit" class="py-1 text-scale-neg-1 font-medium text-interactive max-lg:py-2">Restore</button>
+      </form>
+      <form hx-post="{% url 'notebooks:trash_delete_note' note.id %}" hx-target="#notes-pane"
+            hx-confirm="Permanently delete “{{ note.title }}”? This can't be undone.">
+        {% csrf_token %}
+        <button type="submit" class="py-1 text-scale-neg-1 text-grey-5 hover:text-danger transition-colors max-lg:py-2">Delete forever</button>
+      </form>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+{% if not trashed_notebooks and not trashed_notes %}
+<p class="text-scale-neg-1 text-grey-5">Trash is empty.</p>
+{% endif %}

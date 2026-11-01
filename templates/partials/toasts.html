@@ -1,0 +1,22 @@
+{% comment %}
+One-off request failures, pushed by $store.app.toast() (static/js/app-errors.js).
+Bottom-centre on phones, bottom-right on desktop; each dismisses itself after
+5s unless hovered or focused. On phones they sit above the floating "+" button
+(3.5rem tall, 1.25rem up -- notebook_rail.html / notes_list.html).
+{% endcomment %}
+<div x-data aria-live="polite"
+     class="fixed z-50 bottom-[calc(env(safe-area-inset-bottom,0px)+5.75rem)] inset-x-4 flex flex-col items-center gap-2 pointer-events-none lg:bottom-6 lg:inset-x-auto lg:right-6 lg:items-end">
+  <template x-for="t in $store.app.toasts" :key="t.id">
+    <div x-data="toast(t.id)" @mouseenter="pause()" @mouseleave="resume()" @focusin="pause()" @focusout="resume()"
+         x-transition.opacity.duration.150ms
+         class="pointer-events-auto flex items-center gap-3 max-w-sm rounded-xl border border-grey-2 bg-grey-1 shadow-raised pl-4 pr-2 py-2 text-scale-neg-1 text-grey-6">
+      <span x-text="t.message"></span>
+      <button type="button" x-show="t.undo" @click="$store.app.undo(t)"
+              class="shrink-0 px-2 py-1 font-medium text-interactive underline">Undo</button>
+      <button type="button" @click="$store.app.dismiss(t.id)" aria-label="Dismiss"
+              class="shrink-0 w-8 h-8 grid place-items-center rounded-full text-grey-5 hover:text-interactive transition-colors">
+        <svg viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4" aria-hidden="true"><path d="M12 10.5858L16.9497 5.63604L18.364 7.05025L13.4142 12L18.364 16.9497L16.9497 18.364L12 13.4142L7.05025 18.364L5.63604 16.9497L10.5858 12L5.63604 7.05025L7.05025 5.63604L12 10.5858Z"/></svg>
+      </button>
+    </div>
+  </template>
+</div>

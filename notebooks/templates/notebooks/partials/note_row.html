@@ -1,0 +1,18 @@
+{% comment %}
+oob (note_save): the note was just saved, so it is now the newest -- remove its
+row and re-insert it at the top of its notebook's list (a no-op if another
+notebook's list is showing).
+{% endcomment %}
+{% if oob %}<div id="note-row-{{ note.id }}" hx-swap-oob="delete"></div><div hx-swap-oob="afterbegin:#notes-list-{{ note.notebook_id }}">{% endif %}
+<a id="note-row-{{ note.id }}" href="{% url 'notebooks:note_detail' note.notebook_id note.id %}"
+   hx-get="{% url 'notebooks:note_detail' note.notebook_id note.id %}" hx-target="#editor-pane" hx-push-url="true"
+   {% if active_note.id == note.id %}aria-current="page"{% endif %}
+   class="block rounded-xl px-3 py-2.5 transition-shadow max-lg:flex max-lg:items-center max-lg:gap-2 max-lg:rounded-none max-lg:px-1 max-lg:py-3 max-lg:min-h-[3.25rem] max-lg:border-b max-lg:border-grey-2 {% if active_note.id == note.id %}shadow-pressed max-lg:shadow-none max-lg:bg-grey-2{% else %}hover:shadow-convex active:shadow-pressed max-lg:hover:shadow-none max-lg:active:shadow-none{% endif %}">
+  <span class="block min-w-0 max-lg:flex-1">
+    <span class="block text-scale-0 truncate">{{ note.title }}</span>
+    <span class="block text-scale-neg-2 text-grey-5 mt-0.5">{% if note.updated_at|timesince|first == "0" %}Just now{% else %}{{ note.updated_at|timesince }} ago{% endif %}</span>
+  </span>
+  {# Drill-down affordance: on mobile this row navigates to another screen. #}
+  <svg viewBox="0 0 24 24" fill="currentColor" class="lg:hidden w-4 h-4 shrink-0 text-grey-4" aria-hidden="true"><path d="M13.1717 12.0007L8.22192 7.05093L9.63614 5.63672L16.0001 12.0007L9.63614 18.3646L8.22192 16.9504L13.1717 12.0007Z"/></svg>
+</a>
+{% if oob %}</div>{% endif %}

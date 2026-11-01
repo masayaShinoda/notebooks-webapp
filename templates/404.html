@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}Error 404: Not Found · Notebooks{% endblock %}
+
+{% comment %}
+Same centred-card shell as accounts/signup_disabled.html.
+
+Reached more often than a 404 page usually is: ownership checks across the app
+deliberately return 404 rather than 403 for another user's notebook or note, so
+that the existence of someone else's data is never leaked (see
+PerUserIsolationTests). It therefore has to look like a designed page.
+{% endcomment %}
+{% block main_class %}flex-1 min-h-0 overflow-y-auto overscroll-contain grid place-items-center px-horizontal{% endblock %}
+
+{% block content %}
+<div class="w-full max-w-sm bg-grey-1 dark:bg-grey-1 rounded-4xl shadow-flat p-8 text-center">
+  <h1 class="text-scale-2 font-semibold text-primary dark:text-secondary-shade-b mb-6">Error 404: Not Found</h1>
+  <a href="{% url 'notebooks:workspace' %}"
+     class="inline-block rounded-4xl bg-secondary text-white px-6 py-2 font-medium shadow-flat hover:shadow-convex active:shadow-pressed transition-shadow">
+    Back to home
+  </a>
+</div>
+{% endblock %}
